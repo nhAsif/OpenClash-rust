@@ -505,6 +505,7 @@ do_run_file()
 
    if [ "$small_flash_memory" != "1" ]; then
       meta_core_path="/etc/openclash/core/clash_meta"
+      rust_core_path="/etc/openclash/core/clash_rust"
       ipdb_path="/etc/openclash/Country.mmdb"
       chnr_path="/etc/openclash/china_ip_route.ipset"
       chnr6_path="/etc/openclash/china_ip6_route.ipset"
@@ -523,8 +524,8 @@ do_run_file()
       fi
    else
       meta_core_path="/tmp/etc/openclash/core/clash_meta"
-      ipdb_path="/tmp/etc/openclash/Country.mmdb"
-      chnr_path="/tmp/etc/openclash/china_ip_route.ipset"
+      rust_core_path="/tmp/etc/openclash/core/clash_rust"
+      ipdb_path="/tmp/etc/openclash/Country.mmdb"      chnr_path="/tmp/etc/openclash/china_ip_route.ipset"
       chnr6_path="/tmp/etc/openclash/china_ip6_route.ipset"
       geosite_path="/tmp/etc/openclash/GeoSite.dat"
       geoip_path="/tmp/etc/openclash/GeoIP.dat"
@@ -545,8 +546,16 @@ do_run_file()
 
    if [ "$smart_enable" -eq 1 ] || [ "$core_type" == "Smart" ]; then
       core_type="Smart"
+   elif [ "$core_type" == "Rust" ]; then
+      core_type="Rust"
    else
       core_type="Meta"
+   fi
+
+   if [ "$core_type" == "Rust" ]; then
+      CLASH="$rust_core_path"
+   else
+      CLASH="$meta_core_path"
    fi
 
    if [ -f "$CLASH" ] && [ ! -x "$CLASH" ]; then
@@ -554,15 +563,14 @@ do_run_file()
       chown root:root "$CLASH"
    fi
 
-   [ ! -f "$CLASH" ] || { [ "$core_type" = "Smart" ] && [ -z "$($CLASH -v | grep 'smart')" ]; } && {
+   [ ! -f "$CLASH" ] || { [ "$core_type" = "Smart" ] && [ -z "$($CLASH -v | grep 'smart')" ]; } || { [ "$core_type" = "Rust" ] && [ -z "$($CLASH -v | grep 'rust')" ]; } && {
       LOG_TIP "Detected that the Core is not Installed, Ready to Download..."
       rm -rf "/tmp/clash_last_version"
       /usr/share/openclash/openclash_core.sh "$core_type"
-      if [ ! -f "$meta_core_path" ]; then
+      if [ ! -f "$CLASH" ]; then
          start_fail
       fi
    }
-
    if [ "$china_ip_route" != "0" ] || [ "$china_ip6_route" != "0" ] || [ "$disable_udp_quic" = "1" ]; then
       if [ ! -f "$chnr_path" ] || [ ! -f "$chnr6_path" ]; then
          LOG_TIP "Detected that the Chnroute Cidr is not Installed, Ready to Download..."

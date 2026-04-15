@@ -67,11 +67,14 @@ if [ "$1" = "one_key_update" ]; then
    if [ "$github_address_mod" = "0" ] && [ -z "$2" ]; then
       LOG_TIP "If the download fails, try setting the CDN in Overwrite Settings - General Settings - Github Address Modify Options"
    fi
+   
+   C_CORE_TYPE=$(uci_get_config "core_type" || echo "Meta")
+
    if [ -n "$2" ]; then
-      /usr/share/openclash/openclash_core.sh "Meta" "$1" "$2" >/dev/null 2>&1
+      /usr/share/openclash/openclash_core.sh "$C_CORE_TYPE" "$1" "$2" >/dev/null 2>&1
       github_address_mod="$2"
    else
-      /usr/share/openclash/openclash_core.sh "Meta" "$1" >/dev/null 2>&1
+      /usr/share/openclash/openclash_core.sh "$C_CORE_TYPE" "$1" >/dev/null 2>&1
       github_address_mod=0
    fi
 else

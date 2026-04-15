@@ -120,8 +120,10 @@ end
 local core_path_mode = fs.uci_get_config("config", "small_flash_memory")
 if core_path_mode ~= "1" then
 	meta_core_path="/etc/openclash/core/clash_meta"
+	rust_core_path="/etc/openclash/core/clash_rust"
 else
 	meta_core_path="/tmp/etc/openclash/core/clash_meta"
+	rust_core_path="/tmp/etc/openclash/core/clash_rust"
 end
 
 local function is_running()
@@ -232,6 +234,29 @@ local function corelv()
 
 	action_get_last_version()
 	return core_meta_lv
+end
+
+local function corerustcv()
+	local v = "0"
+	if not fs.access(rust_core_path) then
+		return v
+	else
+		v = luci.sys.exec(string.format("%s -v 2>/dev/null |awk -F ' ' '{print $3}' |head -1 |tr -d '\n'", rust_core_path))
+		if not v or v == "" then
+			return "0"
+		end
+	end
+	return v
+end
+
+local function corerustlv()
+	local core_rust_lv = ""
+	if fs.access("/tmp/clash_last_version") then
+		core_rust_lv = luci.sys.exec("sed -n 3p /tmp/clash_last_version 2>/dev/null |tr -d '\n'")
+	else
+		core_rust_lv = "loading..."
+	end
+	return core_rust_lv
 end
 
 local function opcv()
@@ -1260,6 +1285,8 @@ function action_update()
 		coremodel = coremodel(),
 		coremetacv = coremetacv(),
 		corelv = corelv(),
+		corerustcv = corerustcv(),
+		corerustlv = corerustlv(),
 		opcv = opcv(),
 		oplv = oplv(),
 		upchecktime = upchecktime();

@@ -85,6 +85,15 @@
 		</tr>
 		<tr><td width="25%">[Meta] <%:Current Core%></td><td width="25%" align="left" id="CORE_META_CV"><%:Collecting data...%></td><td width="25%">[Meta] <%:Latest Core%></td><td width="25%" align="left" id="CORE_META_LV"><%:Collecting data...%></td></tr>
 		<tr><td width="25%"><%:Update Core%></td><td width="25%" align="left" id="core_meta_up"><%:Collecting data...%></td><td width="25%"><%:Download Latest Core%></td><td width="25%" align="left" id="ma_core_meta_up"><%:Collecting data...%></td></tr>
+		<tr>
+			<td width="100%" colspan="4">
+				<p align="center">
+					<b><%:Core path:%>/etc/openclash/core/clash_rust</b>
+				</p>
+			</td>
+		</tr>
+		<tr><td width="25%">[Rust] <%:Current Core%></td><td width="25%" align="left" id="CORE_RUST_CV"><%:Collecting data...%></td><td width="25%">[Rust] <%:Latest Core%></td><td width="25%" align="left" id="CORE_RUST_LV"><%:Collecting data...%></td></tr>
+		<tr><td width="25%"><%:Update Core%></td><td width="25%" align="left" id="core_rust_up"><%:Collecting data...%></td><td width="25%"><%:Download Latest Core%></td><td width="25%" align="left" id="ma_core_rust_up"><%:Collecting data...%></td></tr>
 	</table>
 </fieldset>
 <fieldset class="cbi-section">
@@ -137,12 +146,16 @@
 	var cpu_model = document.getElementById('CPU_MODEL');
 	var core_meta_cv = document.getElementById('CORE_META_CV');
 	var core_meta_lv = document.getElementById('CORE_META_LV');
+	var core_rust_cv = document.getElementById('CORE_RUST_CV');
+	var core_rust_lv = document.getElementById('CORE_RUST_LV');
 	var op_cv = document.getElementById('OP_CV');
 	var op_lv = document.getElementById('OP_LV');
 	var core_meta_up = document.getElementById('core_meta_up');
+	var core_rust_up = document.getElementById('core_rust_up');
 	var op_up = document.getElementById('op_up');
 	var update_tip = document.getElementById('update_tip');
 	var ma_core_meta_up = document.getElementById('ma_core_meta_up');
+	var ma_core_rust_up = document.getElementById('ma_core_rust_up');
 	var ma_op_up = document.getElementById('ma_op_up');
 	var restore = document.getElementById('restore');
 	var backup = document.getElementById('backup');
@@ -152,8 +165,10 @@
 	var release_branch = document.getElementById('RELEASE_BRANCH');
 	var smart_enable = document.getElementById('SMART_ENABLE');
 	core_meta_up.innerHTML = '<input type="button" class="btn cbi-button cbi-button-reload" value="<%:Check And Update%>" onclick="return core_update(this,\'Meta\')"/>';
+	core_rust_up.innerHTML = '<input type="button" class="btn cbi-button cbi-button-reload" value="<%:Check And Update%>" onclick="return core_update(this,\'Rust\')"/>';
 	op_up.innerHTML = '<input type="button" class="btn cbi-button cbi-button-reload" value="<%:Check And Update%>" onclick="return op_update(this)"/>';
 	ma_core_meta_up.innerHTML = '<input type="button" class="btn cbi-button cbi-button-reload" value="<%:Download%>" onclick="return ma_core_update(this,\'Meta\')"/>';
+	ma_core_rust_up.innerHTML = '<input type="button" class="btn cbi-button cbi-button-reload" value="<%:Download%>" onclick="return ma_core_update(this,\'Rust\')"/>';
 	ma_op_up.innerHTML = '<input type="button" class="btn cbi-button cbi-button-reload" value="<%:Download%>" onclick="return ma_op_update(this)"/>';
 	restore.innerHTML = '<input type="button" class="btn cbi-button cbi-button-reset" value="<%:Restore Default%>" onclick="return restore_config(this)"/>';
 	one_key_update_cdn.innerHTML = '<input type="button" class="btn cbi-button cbi-button-reset" value="<%:Check Update%>" onclick="return all_one_key_update_cdn(this)"/>';
@@ -206,6 +221,12 @@
 				core_meta_cv.innerHTML = "<b style=color:green>"+status.coremetacv+"</b>";
 			}
 
+			if ( status.corerustcv == "0" ) {
+				core_rust_cv.innerHTML = "<b style=color:red><%:Unknown%></b>";
+			} else {
+				core_rust_cv.innerHTML = "<b style=color:green>"+status.corerustcv+"</b>";
+			}
+
 			var coremetalvis = status.corelv;
 
 			if (coremetalvis != status.coremetacv && coremetalvis != "" && coremetalvis != "loading...") {
@@ -216,6 +237,18 @@
 				core_meta_lv.innerHTML = "<b style=color:green><%:Getting Last Version...%></b>";
 			} else {
 				core_meta_lv.innerHTML = "<b style=color:red><%:Unknown%></b>";
+			}
+
+			var corerustlvis = status.corerustlv;
+
+			if (corerustlvis != status.corerustcv && corerustlvis != "" && corerustlvis != "loading...") {
+				core_rust_lv.innerHTML = "<b style=color:green>"+corerustlvis+" <%:<New>%></b>";
+			} else if (corerustlvis != "" && corerustlvis == status.corerustcv && corerustlvis != "loading...") {
+				core_rust_lv.innerHTML = "<b style=color:green>"+corerustlvis+"</b>";
+			} else if (corerustlvis == "loading...") {
+				core_rust_lv.innerHTML = "<b style=color:green><%:Getting Last Version...%></b>";
+			} else {
+				core_rust_lv.innerHTML = "<b style=color:red><%:Unknown%></b>";
 			}
 
 			var oplv = status.oplv;

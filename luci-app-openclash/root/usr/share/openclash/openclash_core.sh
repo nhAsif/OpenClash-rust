@@ -55,20 +55,32 @@ fi
 
 if [ "$small_flash_memory" != "1" ]; then
    meta_core_path="/etc/openclash/core/clash_meta"
+   rust_core_path="/etc/openclash/core/clash_rust"
    mkdir -p /etc/openclash/core
 else
    meta_core_path="/tmp/etc/openclash/core/clash_meta"
+   rust_core_path="/tmp/etc/openclash/core/clash_rust"
    mkdir -p /tmp/etc/openclash/core
 fi
 
-CORE_CV=$($meta_core_path -v 2>/dev/null |awk -F ' ' '{print $3}' |head -1)
-DOWNLOAD_FILE="/tmp/clash_meta.tar.gz"
-TMP_FILE="/tmp/clash_meta"
-TARGET_CORE_PATH="$meta_core_path"
+if [ "$CORE_TYPE" = "Rust" ]; then
+   CORE_CV=$($rust_core_path -v 2>/dev/null |awk -F ' ' '{print $3}' |head -1)
+   DOWNLOAD_FILE="/tmp/clash_rust.tar.gz"
+   TMP_FILE="/tmp/clash_rust"
+   TARGET_CORE_PATH="$rust_core_path"
+else
+   CORE_CV=$($meta_core_path -v 2>/dev/null |awk -F ' ' '{print $3}' |head -1)
+   DOWNLOAD_FILE="/tmp/clash_meta.tar.gz"
+   TMP_FILE="/tmp/clash_meta"
+   TARGET_CORE_PATH="$meta_core_path"
+fi
 
 if [ "$CORE_TYPE" = "Smart" ]; then
    CORE_URL_PATH="$RELEASE_BRANCH/smart"
    CORE_LV=$(sed -n 2p /tmp/clash_last_version 2>/dev/null)
+elif [ "$CORE_TYPE" = "Rust" ]; then
+   CORE_URL_PATH="$RELEASE_BRANCH/rust"
+   CORE_LV=$(sed -n 3p /tmp/clash_last_version 2>/dev/null)
 else
    CORE_URL_PATH="$RELEASE_BRANCH/meta"
    CORE_LV=$(sed -n 1p /tmp/clash_last_version 2>/dev/null)
@@ -107,8 +119,19 @@ if [ "$CORE_CV" != "$CORE_LV" ] || [ -z "$CORE_CV" ]; then
                LOG_TIP "【"$CORE_TYPE"】Core Download Successful, Start Update..."
                extract_success=true
                [ -s "$DOWNLOAD_FILE" ] && {
-                  tar zxvfo "$DOWNLOAD_FILE" -C /tmp >/dev/null 2>&1 || extract_success=false
-                  mv /tmp/clash "$TMP_FILE" >/dev/null 2>&1 || extract_success=false
+                  if [ "$CORE_TYPE" = "Rust" ]; then
+                     tar zxvfo "$DOWNLOAD_FILE" -C /tmp >/dev/null 2>&1 || extract_success=false
+                     if [ -f "/tmp/mihomo" ]; then
+                        mv /tmp/mihomo "$TMP_FILE" >/dev/null 2>&1 || extract_success=false
+                     elif [ -f "/tmp/clash" ]; then
+                        mv /tmp/clash "$TMP_FILE" >/dev/null 2>&1 || extract_success=false
+                     else
+                        extract_success=false
+                     fi
+                  else
+                     tar zxvfo "$DOWNLOAD_FILE" -C /tmp >/dev/null 2>&1 || extract_success=false
+                     mv /tmp/clash "$TMP_FILE" >/dev/null 2>&1 || extract_success=false
+                  fi
                   rm -rf "$DOWNLOAD_FILE" >/dev/null 2>&1
                   chmod 4755 "$TMP_FILE" >/dev/null 2>&1 || extract_success=false
                   "$TMP_FILE" -v >/dev/null 2>&1 || extract_success=false
