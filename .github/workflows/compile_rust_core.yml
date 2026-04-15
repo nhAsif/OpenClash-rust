@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: '0 0 * * *' # Daily at midnight
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -60,6 +63,7 @@ jobs:
 
   push:
     needs: build
+    if: always() && needs.build.result != 'cancelled'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout core branch
