@@ -22,14 +22,6 @@ jobs:
             arch: armv7
           - target: arm-unknown-linux-musleabi
             arch: armv5
-          - target: mips-unknown-linux-musl
-            arch: mips-softfloat
-          - target: mipsel-unknown-linux-musl
-            arch: mipsle-softfloat
-          - target: mips64-unknown-linux-gnuabi64
-            arch: mips64
-          - target: mips64el-unknown-linux-gnuabi64
-            arch: mips64le
           - target: riscv64gc-unknown-linux-gnu
             arch: riscv64
 
