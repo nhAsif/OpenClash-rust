@@ -93,12 +93,24 @@ if [ "$CORE_CV" != "$CORE_LV" ] || [ -z "$CORE_CV" ]; then
       LOG_TIP "【$CORE_TYPE】Core Downloading, Please Try to Download and Upload Manually If Fails"
       if [ "$github_address_mod" != "0" ]; then
          if [ "$github_address_mod" == "https://cdn.jsdelivr.net/" ] || [ "$github_address_mod" == "https://fastly.jsdelivr.net/" ] || [ "$github_address_mod" == "https://testingcf.jsdelivr.net/" ]; then
-            DOWNLOAD_URL="${github_address_mod}gh/vernesong/OpenClash@core/${CORE_URL_PATH}/clash-${CPU_MODEL}.tar.gz"
+            if [ "$CORE_TYPE" = "Rust" ]; then
+               DOWNLOAD_URL="${github_address_mod}gh/nhAsif/OpenClash-rust@core/${CORE_URL_PATH}/clash-linux-${CORE_VER}.tar.gz"
+            else
+               DOWNLOAD_URL="${github_address_mod}gh/vernesong/OpenClash@core/${CORE_URL_PATH}/clash-linux-${CORE_VER}.tar.gz"
+            fi
          else
-            DOWNLOAD_URL="${github_address_mod}https://raw.githubusercontent.com/vernesong/OpenClash/core/${CORE_URL_PATH}/clash-${CPU_MODEL}.tar.gz"
+            if [ "$CORE_TYPE" = "Rust" ]; then
+               DOWNLOAD_URL="${github_address_mod}https://raw.githubusercontent.com/nhAsif/OpenClash-rust/core/${CORE_URL_PATH}/clash-linux-${CORE_VER}.tar.gz"
+            else
+               DOWNLOAD_URL="${github_address_mod}https://raw.githubusercontent.com/vernesong/OpenClash/core/${CORE_URL_PATH}/clash-linux-${CORE_VER}.tar.gz"
+            fi
          fi
       else
-         DOWNLOAD_URL="https://raw.githubusercontent.com/vernesong/OpenClash/core/${CORE_URL_PATH}/clash-${CPU_MODEL}.tar.gz"
+         if [ "$CORE_TYPE" = "Rust" ]; then
+            DOWNLOAD_URL="https://raw.githubusercontent.com/nhAsif/OpenClash-rust/core/${CORE_URL_PATH}/clash-linux-${CORE_VER}.tar.gz"
+         else
+            DOWNLOAD_URL="https://raw.githubusercontent.com/vernesong/OpenClash/core/${CORE_URL_PATH}/clash-linux-${CORE_VER}.tar.gz"
+         fi
       fi
 
       retry_count=0

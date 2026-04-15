@@ -1,0 +1,97 @@
+name: Compile Rust Core
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *' # Daily at midnight
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            arch: amd64
+          - target: i686-unknown-linux-musl
+            arch: 386
+          - target: aarch64-unknown-linux-musl
+            arch: arm64
+          - target: armv7-unknown-linux-musleabihf
+            arch: armv7
+          - target: arm-unknown-linux-musleabi
+            arch: armv5
+          - target: mips-unknown-linux-musl
+            arch: mips-softfloat
+          - target: mipsel-unknown-linux-musl
+            arch: mipsle-softfloat
+          - target: mips64-unknown-linux-gnuabi64
+            arch: mips64
+          - target: mips64el-unknown-linux-gnuabi64
+            arch: mips64le
+          - target: riscv64gc-unknown-linux-gnu
+            arch: riscv64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout mihomo-rust
+        uses: actions/checkout@v4
+        with:
+          repository: madeye/mihomo-rust
+          path: mihomo-rust
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross
+        run: cargo install cross --git https://github.com/cross-rs/cross.git
+
+      - name: Build
+        run: |
+          cd mihomo-rust
+          cross build --release --target ${{ matrix.target }} --bin mihomo
+          mv target/${{ matrix.target }}/release/mihomo ../clash
+          cd ..
+          tar -zcvf clash-linux-${{ matrix.arch }}.tar.gz clash
+          rm clash
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: clash-linux-${{ matrix.arch }}
+          path: clash-linux-${{ matrix.arch }}.tar.gz
+
+  push:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout core branch
+        uses: actions/checkout@v4
+        with:
+          ref: core
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Move and Push
+        run: |
+          mkdir -p master/rust
+          find artifacts -name "*.tar.gz" -exec mv {} master/rust/ \;
+          
+          # Update version file
+          VERSION=$(curl -s https://api.github.com/repos/madeye/mihomo-rust/commits/master | jq -r '.sha' | cut -c1-8)
+          sed -i "3c\alpha-rust-g$VERSION" master/core_version
+
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add master/rust/*.tar.gz master/core_version
+          git commit -m "update rust core binaries $(date +%Y-%m-%d)" || exit 0
+          git push origin core
